@@ -106,8 +106,13 @@ potentially saved by this method.
 
 ## Related Work
 
-One of the first papers discussing double descent was Nakkiran et al.’s ’Deep Double
-Descent: Where Bigger Models and More Data Hurt’ <d-cite key ="nakkiran2021deep"></d-cite>.
+One of the first papers discussing double descent was Belkin et al. <d-cite key="belkin2019reconciling"></d-cite>. This paper challenged the traditional idea of the 'bias-variance tradeoff'. They showed that after the interpolation threshold (where the model fits perfectly to the training data), test error eventually began to decrease once again. 
+
+Nakkiran et al. <d-cite key="nakkiran2021deep"></d-cite> expanded these findings to the realm of **deep** learning. In this work, double descent is shown to occur for both large models and large datasets. Additionally this paper demonstrates that, counterintuitively, adding more data at a certain point actually worsened the performance of sufficiently large models. This highlights the need for a new understanding for model selection for effectively generalizing to testing datasets. 
+
+In his classic paper 'Bagging Predictors' <d-cite key="breiman1996bagging"></d-cite>, Breiman describes the concept of combining the decisions of multiple models to improve classification ability. This bootstrap aggregating, or 'bagging' technique, reduced variance and improved accuracy, outperforming the single predictors that comprised the ensemble model. 
+
+Another paper that discusses ensemble learning is Freund et al. <d-cite key="freund1997decision"></d-cite>, which introduced the Adaptive Boosting (AdaBoost) algorithm. On a high level, this paper illustrates how boosting is especially effective when combining weak learners that are moderately inaccurate to create a strong learner. We intend to use this algorithm as the basis of our ensemble methods.
 
 ***
 
