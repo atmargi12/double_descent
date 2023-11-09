@@ -186,4 +186,3 @@ size as necessary, with the permission and guidance of course staff.
 ### Reproducibility Statement
 
 To ensure reproducibility, we will save the seed that `make_classification` utilizes so that our results can be verified with the exact dataset we used. Additionally, we will provide our code in our final writeup.
-***
