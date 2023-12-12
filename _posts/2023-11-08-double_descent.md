@@ -60,6 +60,11 @@ _styles: >
   }
 ---
 
+
+## Abstract
+
+We outline the fundamental 'bias-variance tradeoff' concept in machine learning, as well as how the double descent phenomenon counterintuitively bucks this trend for models with levels of parameterization at or beyond the number of data points in a training set. We present a novel investigtaion of the mitigation of the double descent phenomenon by coupling overparameterized neural networks with each other as well as various weak learners. Our findings demonstrate that coupling neural models results in decreased loss during the variance-induced jump in loss before the interpolation threshold, as well as a considerable improvement in model performance well past this threshold. Machine learning practitioners may also find useful the additional dimension of parallelization allowed through ensemble training when invoking double descent. 
+
 ## Motivation
 
 There are many important considerations that machine learning scientists and engineers
@@ -124,6 +129,8 @@ tion. They showed that after the interpolation threshold (where the model fits p
 the training data), test error eventually began to decrease once again, even going below the
 error deemed optimal by the bias-variance minimum.
 
+
+
 Nakkiran et al.’s ’Deep Double Descent: Where Bigger Models and More Data Hurt’ <d-cite key="nakkiran2021deep"></d-cite> expanded these findings to the realm of **deep** learning. In this work, double descent is shown to occur for both large models and large datasets. Additionally, this paper demonstrates that,
 counterintuitively, adding more data at a certain point actually worsened the performance
 of sufficiently large models. Specifically, this occurred at and close to the interpolation
@@ -162,21 +169,59 @@ Decision trees are a machine learning model used for classification tasks. This 
 
 To invoke double descent for decision trees, we can start with a small maximum depth of our tree, and increase this parameter until the training loss becomes perfect. Note that by increasing the max depth by 1, the maximum number of leaves doubles, indicating this model has exponential growth in its complexity with respect to the tree depth.
 
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/dd_decision_tree_zero_one_8.jpg" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
 ### AdaBoost Tree
 
-Adaptive Boosting (AdaBoost) itself is an ensemble model used for robust classification. Freund et al.'s paper 'A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting' first introduced the algorithm \cite{freund1997decision}. On a high level, this paper describes how boosting is especially effective when sequentially combining weak learners that are moderately inaccurate (in this case, these are decision trees) to create a strong learner. We study the loss curve of the AdaBoost model as we increase the number of estimators, that being the number of trees.
+Adaptive Boosting (AdaBoost) itself is an ensemble model used for robust classification. Freund et al.'s paper 'A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting' first introduced the algorithm <d-cite key="freund1997decision"></d-cite>. On a high level, this paper describes how boosting is especially effective when sequentially combining weak learners that are moderately inaccurate (in this case, these are decision trees) to create a strong learner. We study the loss curve of the AdaBoost model as we increase the number of estimators, that being the number of trees.
+
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/dd_adaboost_zero_one_2.jpg" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
 
 ### L2-Boost Tree
 
 L2 Boosting is quite similar to the AdaBoost model, except for L2 Boosting, as models are built sequentially, each new model in the boosting algorithm aims to minimize the L2 loss. Like before, we will study the loss curve of the L2-Boosted model as we increase the number of estimators, or the number of trees. 
 
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/dd_l2boost_zero_one_1.jpg" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+
 ### Random Forest
 
 Random forest is another model that is already an ensemble. As the name implies, this model is a collection of decision trees with randomly selected features, and like the singular decision tree, this model is used for classification tasks. We can begin random forest with a small number of trees, and increase this until we see the double descent phenomenon in our test loss.
 
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/dd_rf_zero_one_6.jpg" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
 ### Logistic Regression
 
 Logistic regression is a classic model used for estimating the probability a sample belongs to various classes. We induce overfitting in logistic regression by varying the ratio of the number of features over the amount of data. We gradually reduce this ratio similar to the methodology of Deng et. al in order to induce overfitting <d-cite key="logistic"></d-cite>.
+
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/dd_logistic_regression_zero_one_c.jpg" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/dd_logistic_regression_zero_one_d.jpg" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
 
 
 ### Neural Networks
@@ -187,38 +232,46 @@ We define the general architecture of the neural network used in this report as 
 
 #### Network Layer
 
-Let the input data be an \(m\) by \(m\) pixel image from the MNIST dataset, which can be processed as an \(m\) by \(m\) matrix, where entry \( (i,j) \) is an integer between 0 and 255 (inclusive) representing the grayscale color of the pixel. Note that \( m=28 \) for MNIST, though for generality, we use \( m \) in this network definition. A value of 0 represents a black pixel, 255 is a white pixel, and values between these are varying shades of gray. We first flatten this structure into a \( m^2 \) by 1 vector, such that the entry \( (i,j) \) of the matrix becomes the \( j + 28*i\)-th entry of the vector, using zero-indexing. We use this vector as the input of our neural network. 
+Let the input data be an $m$ by $m$ pixel image from the MNIST dataset, which can be processed as an $m$ by $m$ matrix, where entry $(i,j)$ is an integer between 0 and 255 (inclusive) representing the grayscale color of the pixel. Note that $m=28$ for MNIST, though for generality, we use $ m $ in this network definition. A value of 0 represents a black pixel, 255 is a white pixel, and values between these are varying shades of gray. We first flatten this structure into a $ m^2 $ by 1 vector, such that the entry $ (i,j) $ of the matrix becomes the $ j + 28*i$-th entry of the vector, using zero-indexing. We use this vector as the input of our neural network. 
 
-Set \( n \) as the network width, which in our project will be varied in different tests. Let \(W^1\) be an \(m \times n\) matrix, where \(W^1_{ij}\) is the weight of input \(i\) applied to node \(j\), and let \(W^1_0\) be an \(n \times 1\) column vector representing the biases added to the weighted input. For an input \(X\), we define the **pre-activation** to be an \(n \times 1\) vector represented by \(Z = {W^1}^T X + W^1_0\). 
+Set $ n $ as the network width, which in our project will be varied in different tests. Let $ W^1 $ be an $ m \times n$  matrix, where $ W^1_{ij}$ is the weight of input $i$ applied to node $j$, and let $W^1_0$ be an $n \times 1$ column vector representing the biases added to the weighted input. For an input $X$, we define the **pre-activation** to be an $n \times 1$ vector represented by $Z = {W^1}^T X + W^1_0$. 
 
 We then pass this linearly transformed vector to the ReLU activation function, defined such that 
 
+$$
 \begin{equation*}
 \text{ReLU}(x)=\begin{cases}
           x \quad &\text{if} \, x > 0 \\
           0 \quad &\text{if} \, x \leq 0 \\
      \end{cases}
 \end{equation*}
+$$
 
-We use this choice of activation function due to the well-known theorem of universal approximation. This theorem states that a feedforward network with at least one single hidden layer containing a finite number of neurons can approximate continuous functions on compact subsets of \( \mathbb{R}^{m^2}\) if the ReLU activation function is used <d-cite key="hornik1991approximation"></d-cite>. Applying an activation function ReLU to each element of \(Z\), the layer finally outputs 
+We use this choice of activation function due to the well-known theorem of universal approximation. This theorem states that a feedforward network with at least one single hidden layer containing a finite number of neurons can approximate continuous functions on compact subsets of $ \mathbb{R}^{m^2} $ if the ReLU activation function is used <d-cite key="hornik1991approximation"></d-cite>. Applying an activation function ReLU to each element of $Z $, the layer finally outputs 
 
-\[ A = ReLU(Z) = ReLU(W^T X + W_0) \]
+$$
+A = ReLU(Z) = ReLU(W^T X + W_0)
+$$
 
-Next, we will input \(A\) into a second hidden layer of the neural network. Let \(k\) be the number of classes that the data can possibly belong to. Again, \(k = 10\) for MNIST, though we will use \(k\) for generality. Then let \(W^2\) be an \(n\) by \(k\) matrix, where \(W^2_{ij}\) is the weight of input \(i\) applied to node \(j\), and let \(W^2_0\) be a \(k \times 1\) column vector representing the biases added to the weighted input. For input \(A\), define a second pre-activation to be a \(k \times 1\) vector represented by \(B = {W^2}^T A + W^2_0\).
+Next, we will input $A$ into a second hidden layer of the neural network. Let $k$ be the number of classes that the data can possibly belong to. Again, $k = 10$ for MNIST, though we will use $k$ for generality. Then let $W^2$ be an $n$ by $k$ matrix, where $W^2_{ij}$ is the weight of input $i$ applied to node $j$, and let $W^2_0$ be a $k \times 1$ column vector representing the biases added to the weighted input. For input $A$, define a second pre-activation to be a $k \times 1$ vector represented by $B = {W^2}^T A + W^2_0$.
 
-Finally, we pass \(B\) to the softmax activation function, defined as
+Finally, we pass $B$ to the softmax activation function, defined as
 
-\[ softmax(z)_i = \frac{e^{z_i}}{\sum_{i=1}^{k} e^{z_j}}\]
+$$
+softmax(z)_i = \frac{e^{z_i}}{\sum_{i=1}^{k} e^{z_j}}
+$$
 
-This will yield a \(k \times 1\) vector of normalized probabilities of the input image belonging to any of the   \(k\) classes.
+This will yield a $k \times 1$ vector of normalized probabilities of the input image belonging to any of the $k$ classes.
 
 #### Training
 
-Let class \(i \) be the true classification for a data point. We have that \(y_i = 1\), and for all \(j \neq i\), \(y_j = 0\). Furthermore, let \(\hat{y_i}\) be the generated probability that the sample belongs to class \(i\). The categorical cross-entropy loss is then defined as follows: 
+Let class $i $ be the true classification for a data point. We have that $y_i = 1$, and for all $j \neq i$, $y_j = 0$. Furthermore, let $\hat{y_i}$ be the generated probability that the sample belongs to class $i$. The categorical cross-entropy loss is then defined as follows: 
 
-\[\mathcal{L}_{CCE} (y_i, \hat{y_i}) = - \sum_{i=0}^{9} y_i \log (\hat{y_i})\]
+$$
+\mathcal{L}_{CCE} (y_i, \hat{y_i}) = - \sum_{i=0}^{9} y_i \log (\hat{y_i})
+$$
 
-From this computed loss, we use backpropagation and gradient descent with learning rate \(\eta\) to optimize model weights. We run experiments that train over 100, 500, and 2000 epochs.
+From this computed loss, we use backpropagation and gradient descent with learning rate $\eta$ to optimize model weights. We run experiments that train over 100, 500, and 2000 epochs.
 
 ### Boostrap Aggregating
 
@@ -232,14 +285,27 @@ To ensure reproducibility, we have included the codebase used for this project, 
 
 ## Results
 
+
+
+
+
 ***
 
 ## Discussion
+
+
+
+
+One notable advantage to this ensemble method is the ability to further parallelize one's training of overparameterized neural networks. These models can take extreme lengths of time to train, and besides increasing the computational allocation used, practitioners may use data, model, or processor parallelism in order to reduce this time. The ensemble neural networks we use are independently generated, meaning that they can be trained on different machines without issue. This could be a valid alternative to training for more epochs for reducing model error past the interpolation threshold. 
+
 
 ***
 
 ## Conclusion
 
+
+
+Ensembles consisting solely of neural networks resulted in a considerable boost in performance past the interpolation threshold. However, pairing the neural network with weak learners in an ensemble voting system actually **decreased** testing performance, though this adverse effect decreased as the neural network received proportionally more votes. Machine learning engineers that intend to intentionally overparameterize their models may take advantage of not only the ensemble approach's increased performance, but the enhanced parallelization capabilities offered by the method.
 
 ***
 
