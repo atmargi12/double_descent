@@ -24,21 +24,28 @@ bibliography: 2023-11-08-double_descent.bib
 #   - make sure that TOC names match the actual section names
 #     for hyperlinks within the post to work correctly.
 toc:
+  - name: Abstract
   - name: Motivation
   - name: Related Work
-  - name: Methods
+  - name: Setup
+  - name: Models
     subsections:
     - name: Decision Trees
+    - name: AdaBoost Tree
+    - name: L2-Boost Tree
     - name: Random Forest
     - name: Logistic Regression
-    - name: Support Vector Machines
     - name: Neural Networks
-  - name: Evaluation
+  - name: Ensemble Learning
     subsections:
-    - name: Software
-    - name: Datasets
-    - name: Computing Resources
-    - name: Reproducibility Statement
+    - name: Weak-Learner Ensemble
+    - name: Multi-Layer Perceptron Ensemble
+  - name: Results
+  - name: Discussion
+  - name: Conclusion
+  - name: Future Work
+  - name: Reproducibility Statement
+
 
 # Below is an example of injecting additional post-specific styles.
 # This is used in the 'Layouts' section of this post.
@@ -65,6 +72,8 @@ _styles: >
 
 We outline the fundamental 'bias-variance tradeoff' concept in machine learning, as well as how the double descent phenomenon counterintuitively bucks this trend for models with levels of parameterization at or beyond the number of data points in a training set. We present a novel investigtaion of the mitigation of the double descent phenomenon by coupling overparameterized neural networks with each other as well as various weak learners. Our findings demonstrate that coupling neural models results in decreased loss during the variance-induced jump in loss before the interpolation threshold, as well as a considerable improvement in model performance well past this threshold. Machine learning practitioners may also find useful the additional dimension of parallelization allowed through ensemble training when invoking double descent. 
 
+***
+
 ## Motivation
 
 There are many important considerations that machine learning scientists and engineers
@@ -78,7 +87,7 @@ generalizing on new samples. On the other hand, a modern machine learning scient
 contest that a bigger model is always better. If the true function relating an input and output
 is conveyed by a simple function, In reality, neither of these ideas are completely correct in
 practice, and empirical findings demonstrate some combination of these philosophies.
-This brings us to the concept known as **double descent**. Double descent is the phenomenon
+This brings us to the concept known as *double descent*. Double descent is the phenomenon
 where, as a model’s size is increased, test loss increases after reaching a minimum, then
 eventually decreases again, potentially to a new global minimum. This often happens in the
 region where training loss becomes zero (or whatever the ’perfect’ loss score may be), which
@@ -90,7 +99,7 @@ The question of ’how big should my model be?’ is key to the studies of machi
 practitioners. While many over-parameterized models can achieve lower test losses than the
 initial test loss minimum, it is fair to ask if the additional time, computing resources, and
 electricity used make the additional performance worth it. To study this question in a novel
-way, we propose incorporating **ensemble learning**.
+way, we propose incorporating *ensemble learning*.
 
 Ensemble learning is the practice of using several machine learning models in conjunction
 to potentially achieve even greater accuracy on test datasets than any of the individual
@@ -99,7 +108,7 @@ empirically found on many datasets. To our knowledge, there is not much literatu
 double descent is affected by ensemble learning versus how the phenomenon arises for any
 individual model.
 
-We are effectively studying two different **types** of model complexity: one that incorporates
+We are effectively studying two different *types* of model complexity: one that incorporates
 higher levels parameterization for an individual model, and one that uses several models in
 conjunction with each other. We demonstrate how ensemble learning affects the onset of the
 double descent phenomenon. By creating an ensemble that includes an overparameterized
@@ -120,8 +129,18 @@ model error: bias and variance. Bias is the error between the expected predictio
 model and the true output value, introduced by approximating a real-world quantity with
 a model, which may overisimplify the true problem at hand. Variance refers to the error
 due to a model’s sensitivity to small fluctuations in the training dataset. Overfitted models
-may have high variance, as they may model random noise in the data as well. In short,
-classical statistical learning argues that there is some optimal level of parametrization of
+may have high variance, as they may model random noise in the data as well. 
+
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/biasvariance.png" title="The Double Descent Curve" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    The Bias-Variance Tradeoff <d-cite key="cornell"></d-cite>
+</div>
+
+In short, classical statistical learning argues that there is some optimal level of parametrization of
 a model, where it is neither underparameterized or overparameterized, that minimizes the
 total error between bias and variance. However, Belkin’s paper finds that, empirically, this
 bias-variance tradeoff no longer becomes a tradeoff at a certain level of overparamateriza-
@@ -130,11 +149,21 @@ the training data), test error eventually began to decrease once again, even goi
 error deemed optimal by the bias-variance minimum.
 
 
-
-Nakkiran et al.’s ’Deep Double Descent: Where Bigger Models and More Data Hurt’ <d-cite key="nakkiran2021deep"></d-cite> expanded these findings to the realm of **deep** learning. In this work, double descent is shown to occur for both large models and large datasets. Additionally, this paper demonstrates that,
+Nakkiran et al.’s ’Deep Double Descent: Where Bigger Models and More Data Hurt’ <d-cite key="nakkiran2021deep"></d-cite> expanded these findings to the realm of *deep* learning. In this work, double descent is shown to occur for both large models and large datasets. Additionally, this paper demonstrates that,
 counterintuitively, adding more data at a certain point actually worsened the performance
 of sufficiently large models. Specifically, this occurred at and close to the interpolation
-threshold for neural models. For the region between the first and second loss minima, model
+threshold for neural models. This paper's results can be seen here:
+
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/openai.png" title="The Double Descent Curve" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    The Double Descent Curve <d-cite key="nakkiran2021deep"></d-cite>
+</div>
+
+For the region between the first and second loss minima, model
 performance can suffer greatly, despite the increased computational time and resources used
 to generate such models. While this region of the test loss curve is typically not a level of
 parameterization that one would use in practice, understanding this the entire loss curve
@@ -151,7 +180,7 @@ of the findings of this paper with the double descent phenomenon. Effectively, b
 
 ***
 
-## Methods
+## Setup
 
 ### Computing Resources and Software
 
@@ -163,11 +192,24 @@ We use the MNIST dataset for this report <d-cite key="deng2012mnist"></d-cite>. 
 
 For this project, we use the MNIST dataset to unearth the double descent phenomenon. At the moment, we intend to experiment with five models, as well as an ensemble of them: decision trees, random forest, logistic regression, support vector machines, and small neural networks. We choose these models because of their ability to be used for classification tasks, and more complicated models run the risk of exceeding Google Colab's limitations, especially when we overparameterize these models to invoke double descent. 
 
+<div class="row">
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mnist.jpeg" title="MNIST Sample Data" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Sample MNIST Data <d-cite key="deng2012mnist"></d-cite>
+</div>
+
+***
+
+## Models
+
 ### Decision Trees
 
 Decision trees are a machine learning model used for classification tasks. This model resembles a tree, splitting the data at branches, culminating in a prediction at the leaves of the tree. 
 
-To invoke double descent for decision trees, we can start with a small maximum depth of our tree, and increase this parameter until the training loss becomes perfect. Note that by increasing the max depth by 1, the maximum number of leaves doubles, indicating this model has exponential growth in its complexity with respect to the tree depth.
+To invoke overparameterization for decision trees, we can start with a tree of depth 2, and increase the number of maximum leaves of the model until the loss plateaus. Then, keeping this new number of max leaves in our decision tree, we continually increase the maximum depth of the tree until the loss once again stops decreasing. Lastly, keep both the maximum leaves and depth at their plateau levels while increasing the max features until we see loss stop decreasing. The results of this are plotted below. 
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
@@ -175,9 +217,13 @@ To invoke double descent for decision trees, we can start with a small maximum d
     </div>
 </div>
 
+<div class="caption">
+    Decision Tree Overparameterization
+</div>
+
 ### AdaBoost Tree
 
-Adaptive Boosting (AdaBoost) itself is an ensemble model used for robust classification. Freund et al.'s paper 'A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting' first introduced the algorithm <d-cite key="freund1997decision"></d-cite>. On a high level, this paper describes how boosting is especially effective when sequentially combining weak learners that are moderately inaccurate (in this case, these are decision trees) to create a strong learner. We study the loss curve of the AdaBoost model as we increase the number of estimators, that being the number of trees.
+Adaptive Boosting (AdaBoost) itself is an ensemble model used for robust classification. Freund et al.'s paper 'A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting' first introduced the algorithm <d-cite key="freund1997decision"></d-cite>. On a high level, this paper describes how boosting is especially effective when sequentially combining weak learners that are moderately inaccurate (in this case, these are decision trees) to create a strong learner. We study the loss curve of the AdaBoost model as we first increase the number of trees, then increase the number of forests after adding additional trees fails to increase model performance. 
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
@@ -185,42 +231,60 @@ Adaptive Boosting (AdaBoost) itself is an ensemble model used for robust classif
     </div>
 </div>
 
+<div class="caption">
+    AdaBoost Overparameterization
+</div>
 
 ### L2-Boost Tree
 
-L2 Boosting is quite similar to the AdaBoost model, except for L2 Boosting, as models are built sequentially, each new model in the boosting algorithm aims to minimize the L2 loss. Like before, we will study the loss curve of the L2-Boosted model as we increase the number of estimators, or the number of trees. 
+L2 Boosting is quite similar to the AdaBoost model, except for L2 Boosting, as models are built sequentially, each new model in the boosting algorithm aims to minimize the L2 loss. Like before, we first increase the number of trees in the L2-Boost model, then the number of forests. The results can be seen below. 
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
         {% include figure.html path="assets/img/dd_l2boost_zero_one_1.jpg" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
-
+<div class="caption">
+    L2-Boost Overparameterization
+</div>
 
 ### Random Forest
 
-Random forest is another model that is already an ensemble. As the name implies, this model is a collection of decision trees with randomly selected features, and like the singular decision tree, this model is used for classification tasks. We can begin random forest with a small number of trees, and increase this until we see the double descent phenomenon in our test loss.
+Random forest is another model that is already an ensemble. As the name implies, this model is a collection of decision trees with randomly selected features, and like the singular decision tree, this model is used for classification tasks. A previous paper Buschjager et. al has uncovered that there is no true double descent with the random forest model <d-cite key="randomforest"></d-cite>. Despite this, for our ensemble model, we aim to see if the addition of this overparameterized learner to the neural network's decision making is able to improve ensemble performance. We begin random forest with a small number of maximum leaves trees, and increase the max leaves until we see the loss plateau as we continually add more. After this, we begin increasing the number of trees until the loss plateaus once again. 
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
         {% include figure.html path="assets/img/dd_rf_zero_one_6.jpg" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
+<div class="caption">
+    Random Forest Overparameterization
+</div>
 
 ### Logistic Regression
 
-Logistic regression is a classic model used for estimating the probability a sample belongs to various classes. We induce overfitting in logistic regression by varying the ratio of the number of features over the amount of data. We gradually reduce this ratio similar to the methodology of Deng et. al in order to induce overfitting <d-cite key="logistic"></d-cite>.
+Logistic regression is a classic model used for estimating the probability a sample belongs to various classes. We induce overfitting in logistic regression through two methods. First, we continually increase the 'C' parameter, indicating the number of model parameters, as shown below. 
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
         {% include figure.html path="assets/img/dd_logistic_regression_zero_one_c.jpg" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
+<div class="caption">
+    Logistic Regression Overparameterization (Parameter Based)
+</div>
+
+Second, we try inducing double descent by varying the ratio of the number of features over the amount of data. We gradually reduce this ratio similar to the methodology of Deng et. al in order to induce overfitting <d-cite key="logistic"></d-cite>.
+
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
         {% include figure.html path="assets/img/dd_logistic_regression_zero_one_d.jpg" class="img-fluid rounded z-depth-1" %}
     </div>
+</div>
+
+<div class="caption">
+    Logistic Regression Overparameterization (Feature-Data Ratio Based)
 </div>
 
 
@@ -234,7 +298,7 @@ We define the general architecture of the neural network used in this report as 
 
 Let the input data be an $m$ by $m$ pixel image from the MNIST dataset, which can be processed as an $m$ by $m$ matrix, where entry $(i,j)$ is an integer between 0 and 255 (inclusive) representing the grayscale color of the pixel. Note that $m=28$ for MNIST, though for generality, we use $ m $ in this network definition. A value of 0 represents a black pixel, 255 is a white pixel, and values between these are varying shades of gray. We first flatten this structure into a $ m^2 $ by 1 vector, such that the entry $ (i,j) $ of the matrix becomes the $ j + 28*i$-th entry of the vector, using zero-indexing. We use this vector as the input of our neural network. 
 
-Set $ n $ as the network width, which in our project will be varied in different tests. Let $ W^1 $ be an $ m \times n$  matrix, where $ W^1_{ij}$ is the weight of input $i$ applied to node $j$, and let $W^1_0$ be an $n \times 1$ column vector representing the biases added to the weighted input. For an input $X$, we define the **pre-activation** to be an $n \times 1$ vector represented by $Z = {W^1}^T X + W^1_0$. 
+Set $ n $ as the network width, which in our project will be varied in different tests. Let $ W^1 $ be an $ m \times n$  matrix, where $ W^1_{ij}$ is the weight of input $i$ applied to node $j$, and let $W^1_0$ be an $n \times 1$ column vector representing the biases added to the weighted input. For an input $X$, we define the *pre-activation* to be an $n \times 1$ vector represented by $Z = {W^1}^T X + W^1_0$. 
 
 We then pass this linearly transformed vector to the ReLU activation function, defined such that 
 
@@ -250,7 +314,7 @@ $$
 We use this choice of activation function due to the well-known theorem of universal approximation. This theorem states that a feedforward network with at least one single hidden layer containing a finite number of neurons can approximate continuous functions on compact subsets of $ \mathbb{R}^{m^2} $ if the ReLU activation function is used <d-cite key="hornik1991approximation"></d-cite>. Applying an activation function ReLU to each element of $Z $, the layer finally outputs 
 
 $$
-A = ReLU(Z) = ReLU(W^T X + W_0)
+A = \text{ReLU}(Z) = \text{ReLU}(W^T X + W_0)
 $$
 
 Next, we will input $A$ into a second hidden layer of the neural network. Let $k$ be the number of classes that the data can possibly belong to. Again, $k = 10$ for MNIST, though we will use $k$ for generality. Then let $W^2$ be an $n$ by $k$ matrix, where $W^2_{ij}$ is the weight of input $i$ applied to node $j$, and let $W^2_0$ be a $k \times 1$ column vector representing the biases added to the weighted input. For input $A$, define a second pre-activation to be a $k \times 1$ vector represented by $B = {W^2}^T A + W^2_0$.
@@ -271,22 +335,131 @@ $$
 \mathcal{L}_{CCE} (y_i, \hat{y_i}) = - \sum_{i=0}^{9} y_i \log (\hat{y_i})
 $$
 
-From this computed loss, we use backpropagation and gradient descent with learning rate $\eta$ to optimize model weights. We run experiments that train over 100, 500, and 2000 epochs.
+From this computed loss, we use backpropagation and gradient descent with learning rate $\eta$ to optimize model weights. We run experiments that train over 100, 500, and 2000 epochs. Below are the results of the trained and tested neural networks.
 
-### Boostrap Aggregating
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mlp-100-epochs-train.png" title="MLP 100 Epoch Training" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mlp-100-epochs-test.png" title="MLP 100 Epoch Testing" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
 
-We use bootstrap aggregating, or 'bagging', to formulate our ensemble of these six models. Effectively, each model is given a certain number of 'votes' on what that model believes is the correct classification for any given MNIST sample image. The classification with the most total votes is then used as the ensemble's overall output. In the event of a tie, the neural network's prediction is chosen. Since we want a neural model to be the basis of our ensemble, we vary the number of votes assigned to the neural network while keeping the number of votes for other models fixed to 1. With five supplementary models in addition to the neural network, giving the neural network 5 or more votes is not necessary, since this ensemble would always output the same results as the neural network. Because of this, we study the loss curve when giving the neural network 1, 2, 3, and 4 votes. Note that decimal value votes for the neural network are not sensible, since it can be proved that all potential voting scenarios are encapsulated into the four voting levels we have chosen.
+<div class="caption">
+    MLP 100 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
+</div>
 
-### Reproducibility Statement
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mlp-500-epochs-train.png" title="MLP 500 Epoch Training" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mlp-500-epochs-test.png" title="MLP 500 Epoch Testing" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
 
-To ensure reproducibility, we have included the codebase used for this project, as well as the above description of our data, models, and methods. 
+<div class="caption">
+    MLP 500 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
+</div>
+
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mlp-2000-epoch-train.png" title="MLP 2000 Epoch Training" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/mlp-2000-epochs-test.png" title="MLP 2000 Epoch Testing" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="caption">
+    MLP 2000 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
+</div>
+
+***
+
+## Ensemble Learning
+
+We experimented with two different types of ensembles. The first ensemble is what we call the 'weak-learner' ensemble, which is the model that incorporates the multi-layer perceptron supported by the five other machine learning models we discussed. The second ensemble is the 'multi-layer perceptron' ensemble, which solely includes MLPs. 
+
+### Weak-Learner Ensemble
+
+We use bootstrap aggregating, or 'bagging', to formulate our ensemble of these six models. Effectively, each model is given a certain number of 'votes' on what that model believes is the correct classification for any given MNIST sample image. The classification with the most total votes is then used as the ensemble's overall output. In the event of a tie, the neural network's prediction is chosen. Since we want a neural model to be the basis of our ensemble, we vary the number of votes assigned to the neural network while keeping the number of votes for other models fixed to 1. With five supplementary models in addition to the neural network, giving the neural network 5 or more votes is not necessary, since this ensemble would always output the same results as the neural network. Because of this, we study the loss curve when giving the neural network 1, 2, and 3 votes. Note that decimal value votes less than three for the neural network are not sensible, since it can be proved that all potential voting scenarios are encapsulated into the three voting levels we have chosen.
+
+### Multi-Layer Perceptron Ensemble
+
 
 ***
 
 ## Results
 
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/Strong-Classifier-100-Epochs-1-vote-train.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/Strong-Classifier-100-Epochs-1-vote-test.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="caption">
+    Weak-Learner Ensemble 100 Epoch Training/Testing Zero-One Loss Over MLP Parameter Count / 1000. MLP given 1 vote. 
+</div>
 
 
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/Strong-Classifier-100-Epochs-2-vote-train.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/Strong-Classifier-100-Epochs-2-vote-test.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="caption">
+    Weak-Learner Ensemble 100 Epoch Training/Testing Zero-One Loss Over MLP Parameter Count / 1000. MLP given 2 votes. 
+</div>
+
+
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/Strong-Classifier-100-Epochs-3-vote-train.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/Strong-Classifier-100-Epochs-3-votes-test.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="caption">
+    Weak-Learner Ensemble 100 Epoch Training/Testing Zero-One Loss Over MLP Parameter Count / 1000. MLP given 3 votes. 
+</div>
+
+
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/ensemble-100-epochs-train.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/ensemble-100-epochs-test.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="caption">
+    MLP Ensemble 100 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
+</div>
+
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/ensemble-500-epochs-train.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/ensemble-500-epochs-test.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+
+<div class="caption">
+    MLP Ensemble 500 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
+</div>
 
 
 ***
@@ -305,7 +478,7 @@ One notable advantage to this ensemble method is the ability to further parallel
 
 
 
-Ensembles consisting solely of neural networks resulted in a considerable boost in performance past the interpolation threshold. However, pairing the neural network with weak learners in an ensemble voting system actually **decreased** testing performance, though this adverse effect decreased as the neural network received proportionally more votes. Machine learning engineers that intend to intentionally overparameterize their models may take advantage of not only the ensemble approach's increased performance, but the enhanced parallelization capabilities offered by the method.
+Ensembles consisting solely of neural networks resulted in a considerable boost in performance past the interpolation threshold. However, pairing the neural network with weak learners in an ensemble voting system actually *decreased* testing performance, though this adverse effect decreased as the neural network received proportionally more votes. Machine learning engineers that intend to intentionally overparameterize their models may take advantage of not only the ensemble approach's increased performance, but the enhanced parallelization capabilities offered by the method.
 
 ***
 
@@ -315,3 +488,9 @@ Ensembles consisting solely of neural networks resulted in a considerable boost 
 This project was implemented using Google Colab, which proved to be restrictive for adopting more complex models. A key part of the double descent phenomenon is overparameterization, and so complex models that are additionally overparameterized will require more powerful computing resources beyond what we used. Furthermore, additional computing power can allow for this project to be expanded to more complicated datasets and tasks. MNIST classification is computationally inexpensive, though invoking double descent in more complex tasks such as text generation in natural language processing was not feasible using Google Colab. Future projects that follow this work should keep computational limitations in mind when choosing models and datasets. 
 
 During the planning process of this project, we discussed using a more rigorous voting system than what is traditionally found in ensemble model projects. Effectively, each model would have a weight associated with how much influence its output should have on the overall ensemble output. For $n$ models, each model could start with, say, a weight of $1/n$. Then, after producing each model's vector output, the categorical cross-entropy loss with respect the true output could be computed, and the weights of each model could be updated such that each model has its weight decreased by some amount proportional to the calculated loss. Then, these weights could be normalized using the softmax function. This would be repeated for each level of parameterization. Due to resource constraints, learning both the model weights and ensemble weights at each level of ensemble parameterization was not feasible given the size of the models we built, as well as the number of epochs we trained over. Future studies may wish to implement this method, however, to produce a more robust ensemble for classification.
+
+***
+
+## Reproducibility Statement
+
+To ensure reproducibility, we have included the codebase used for this project, as well as the above description of our data, models, and methods. 
