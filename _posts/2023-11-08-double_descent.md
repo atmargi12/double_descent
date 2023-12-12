@@ -86,7 +86,7 @@ generalizes on new samples. On the other hand, a modern machine learning scienti
 contest that a bigger model is always better. If the true function relating an input and output
 is conveyed by a simple function, In reality, neither of these ideas are completely correct in
 practice, and empirical findings demonstrate some combination of these philosophies.
-This brings us to the concept known as *double descent*. Double descent is the phenomenon
+This brings us to the concept known as **double descent**. Double descent is the phenomenon
 where, as a model’s size is increased, test loss increases after reaching a minimum, then
 eventually decreases again, potentially to a new global minimum. This often happens in the
 region where training loss becomes zero (or whatever the ’perfect’ loss score may be), which
@@ -98,7 +98,7 @@ The question of ’how big should my model be?’ is key to the studies of machi
 practitioners. While many over-parameterized models can achieve lower test losses than the
 initial test loss minimum, it is fair to ask if the additional time, computing resources, and
 electricity used make the additional performance worth it. To study this question in a novel
-way, we propose incorporating *ensemble learning*.
+way, we propose incorporating **ensemble learning**.
 
 Ensemble learning is the practice of using several machine learning models in conjunction
 to potentially achieve even greater accuracy on test datasets than any of the individual
@@ -107,7 +107,7 @@ empirically found on many datasets. To our knowledge, there is not much literatu
 double descent is affected by ensemble learning versus how the phenomenon arises for any
 individual model.
 
-We are effectively studying two different *types* of model complexity: one that incorporates
+We are effectively studying two different **types** of model complexity: one that incorporates
 higher levels of parameterization for an individual model, and one that uses several models in
 conjunction with each other. We demonstrate how ensemble learning affects the onset of the
 double descent phenomenon. By creating an ensemble that includes (or is fully comprised of) overparameterized
@@ -148,7 +148,7 @@ the training data), test error eventually began to decrease again, even going be
 error deemed optimal by the bias-variance minimum.
 
 
-Nakkiran et al.’s ’Deep Double Descent: Where Bigger Models and More Data Hurt’ <d-cite key="nakkiran2021deep"></d-cite> expanded these findings to the realm of *deep* learning. In this work, double descent is shown to occur for both large models and large datasets. Additionally, this paper demonstrates that,
+Nakkiran et al.’s ’Deep Double Descent: Where Bigger Models and More Data Hurt’ <d-cite key="nakkiran2021deep"></d-cite> expanded these findings to the realm of **deep** learning. In this work, double descent is shown to occur for both large models and large datasets. Additionally, this paper demonstrates that,
 counterintuitively, adding more data at a certain point actually worsened the performance
 of sufficiently large models. Specifically, this occurred at and close to the interpolation
 threshold for neural models. This paper's results can be seen here:
@@ -183,7 +183,9 @@ of the findings of this paper with the double descent phenomenon. Effectively, b
 
 ### Computing Resources and Software
 
-We have implemented this project using CUDA and the free version of Google Colab, with additional computing units for more costly experiments. To train and test these models, we use various machine learning packages in Python, namely Scikit-learn, PyTorch and Tensorflow. Additional software commonly used for machine learning projects, such as numpy and matplotlib, was also utilized.
+We have implemented this project using CUDA and the free version of Google Colab, with additional computing units for more costly experiments. To train and test these models, we use various machine learning packages in Python, namely Scikit-learn, PyTorch and Tensorflow. Additional software commonly used for machine learning projects, such as numpy, tensorboard matplotlib, was also utilized.
+
+All plots have been produced by us, unless otherwise specified. Note that all tensorboard plots have $0.25$ smoothing applied, except for the Soft-Voting Ensemble, which has $0.6$ smoothing applied (though this won't make much of a difference as will soon be seen). The non-smoothed plot can be seen traced in light-blue in all provided plots.
 
 ### Data
 
@@ -254,7 +256,7 @@ Notice how the classification loss begins to fall, then rises up again, then fal
     L2-Boost Overparameterization
 </div>
 
-The behavior of the loss once we add more models agrees with general intuition regarding ensembling, but the appearance of double descent as we increase the total number of parameters is still quite interesting to see. L2-Boost is a relatively inexpensive model and ensembling a large number of trees is still quite fast, suggesting that overparametrization would be the way to go in this case.
+The behavior of the loss once we add more models agrees with general intuition regarding ensembling, but the appearance of double descent as we increase the total number of parameters is still quite interesting to see. L2-Boost is a relatively inexpensive model and ensembling a large number of trees is still quite fast, suggesting that overparametrization could be the way to go in this case.
 
 ### Random Forest
 
@@ -348,7 +350,7 @@ $$
 \mathcal{L}_{CCE} (y_i, \hat{y_i}) = - \sum_{i=0}^{9} y_i \log (\hat{y_i})
 $$
 
-From this computed loss, we use backpropagation and stochastic gradient descent (SGD) with learning rate $\eta = 0.1$ and $momentum = 0.95$ to optimize model weights. We run experiments on a dataset with $n = 4000$ subsamples that train over $100$, $500$, and $2000$ epochs using Belkin et al.'s approach to training. Up to interpolation, we train until we reach zero classification error on the training data, or until we have finished all of the epochs, whichever comes first. After we have reached the interpolation thereshold, we train until we have gone through all of the epochs. Note that to get their results, Belkin et al. trained over $6000$ epochs, which proved to be prohibitively expensive given our resources. Instead, we chose to train over a variety of smaller maximum epoch sizes to illustrate the double descent curve taking clearer shape, with the $2000$ epoch run being the most indicative of this phenomena. Below are the results of the trained and tested neural networks. Notice that interpolation consistently happens when the number of parameters is roughly equal to $n\times K$ (i.e. Parameter Count / 1000 $= 40$). 
+From this computed loss, we use backpropagation and stochastic gradient descent (SGD) with learning rate $\eta = 0.1$ and $momentum = 0.95$ to optimize model weights. We run experiments on a dataset with $n = 4000$ subsamples that train over $100$, $500$, and $2000$ epochs using Belkin et al.'s approach to training. Up to interpolation, we train until we reach zero classification error on the training data, or until we have finished all of the epochs, whichever comes first. After we have reached the interpolation thereshold, we train until we have gone through all of the epochs. Note that to get their results, Belkin et al. trained over $6000$ epochs, which proved to be prohibitively expensive given our resources. Instead, we chose to train over a variety of smaller maximum epoch sizes to illustrate the double descent curve taking clearer shape, with the $2000$ epoch run being the most indicative of this phenomena. Below are the results of the trained and tested neural networks. Notice that interpolation consistently happens when the number of parameters is roughly equal to $n\times K$ (i.e. Parameter Count / 1000 $= 40$), and the test loss starts consistently getting lower and lower as we add more and more parameters beyond this threshold. Double descent is real!
 
 <div class="row justify-content-sm-center">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -389,6 +391,8 @@ From this computed loss, we use backpropagation and stochastic gradient descent 
     MLP 2000 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
 </div>
 
+For the sake of brevity, we avoid including plots for train/test classification loss for the MLPs. However, it is worth noting that train classification loss eventually reaches $0$ in all experiments, whereas test loss eventually becomes $\sim 0.08$ or smaller.
+
 Throughout each experiment, we vary across the number of total parameters of the model. For a network with $H$ hidden units, the total number of parameters is equal to $(d+1)\times H + (H + 1)\times K$, and so we choose $H$ accordingly each time we reparametrize. 
 
 Note that we also incorporated a weight reuse scheme for models in the underparametrized regime to cut on training time, similarly to the approach in Belkin et al. 
@@ -406,6 +410,52 @@ We experimented with two different types of ensembles. The first ensemble is wha
 ### Weak-Learner Ensemble
 
 We use bootstrap aggregating, or 'bagging', to formulate our ensemble of these five models. Effectively, each model is given a certain number of 'votes' on what that model believes is the correct classification for any given MNIST sample image. The classification with the most total votes is then used as the ensemble's overall output. In the event of a tie, the neural network's prediction is chosen. Since we want a neural model to be the basis of our ensemble, we vary the number of votes assigned to the neural network while keeping the number of votes for other models fixed to 1. With four supplementary models in addition to the neural network, giving the neural network 4 or more votes is not necessary, since this ensemble would always output the same results as the neural network. Because of this, we study the loss curve when giving the neural network 1, 2, and 3 votes. Note that decimal value votes less than three for the neural network are not sensible, since it can be proved that all potential voting scenarios are encapsulated into the three voting levels we have chosen.
+
+Another important aspect of our ensemble is that the 'weak' classifiers do not vary in parametrization, only the MLP does. Refitting all the weak classifiers acorss epochs and MLP parametrizations took much longer than expected, perhaps due to incompatibilities between sklearn and GPUs, and completing the experiments using this approach was unfortunately unfeasibile. Hence, all 'weak' classifiers have fixed architectures, chosen such that each one has low test error but is not at the highest level of parametrization according to the previous discussion, and only the MLP varies.
+
+### Multi-Layer Perceptron Ensemble
+
+The Multi-Layer Perceptron Ensemble uses $5$ identically initialized MLPs which are trained in parallel using Pytorch's autovectorization capabilities. Since they are defined in the same way and trained simultaneously using the MLP training scheme discussed above, each receives equal weight when it comes to taking an averaged prediction. However, unlike the bagging method used for the Weak-Learner Ensemble, we take advantage of the identical architectures of the models and the numerical stability provided by this, and generate ensemble predictions by averaging the logits of all five learners and using those values as the logits of the ensemble. Again, we experiment using $100$ and $500$ epochs to see how the behavior evolves across increasing number of epochs, but we omit training over $2000$ epochs due to excessive computational costs. An experiment for the future would be training over a very large number of epochs for even greater ensemble sizes to see how results vary across time.
+
+
+There has been discussion in the past of whether to average the raw logits or the softmax-transformed probabilities. The main concern raised over averaging across raw logits is that the outputted values can vary greatly in magnitude across models (and therefore overconfident models can potentially overshadow all other models when taking the prediction), but, empirically, that doesn't seem to be a problem here. Tassi et al. provide some intuition in <d-cite key="Tassi2022TheIO"></d-cite>, suggesting that different approaches to ensembling should be taken depending depending on the architecture and levels of confidence of the models. For general safety, they recommend averaging the probabilities, but for the purposes of our task, averaging the logits suffices.
+
+***
+
+## Results and Discussion
+
+Contrary to our expectations, the Weak Learner Ensemble performs much worse than even the individual models on MNIST classification. Although our focus is on double descent and not on the strong predictive power of ensembles, the latter is needed to observe the former, or at least discuss it at an interesting level. 
+
+Initially, we tried applying a soft-voting scheme, using the predicted class-probabilities of each model and taking the averaged prediction, which varies on the number of votes the MLP has. Then, we used Negative Log Likelihood Loss instead of Cross Entropy Loss, since taking the softmax of probabilities is not necessary. This was done in order to incorporate the predictions of the whole ensemble into the training of the MLP, but the reported results are unexpectedly poor, yielding very high classification loss, especially when compared to the results of each model taken individually. This may be because each 'weak' learner has high confidence in its predicted class, whereas the MLP may be more evenly split between different classes, which would result in the weak classifiers winning more often, even if the MLP has higher weight in the prediction. The plot of the Negative Log Likelihood Loss for both training and testing is also hard to understand, but it is clear the ensemble has a very hard time improving, even as more parameters are added. We only include the results for the ensemble gives the MLP $3$ votes, but note that these are the best ones we were able to produce given this method.
+
+
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/2023-11-08-double_descent/Soft-Voting-3-train.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/2023-11-08-double_descent/Soft-Voting-3-test.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Soft-Voting Weak-Learner Ensemble 100 Epoch Training/Testing Negative Log Likelihood Loss Over MLP Parameter Count / 1000. MLP given 3 votes. 
+</div>
+
+<div class="row justify-content-sm-center">
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/2023-11-08-double_descent/Soft-Voting-3-train-accuracy.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+    <div class="col-sm-12 mt-3 mt-md-0">
+        {% include figure.html path="assets/img/2023-11-08-double_descent/Soft-Voting-3-test-accuracy.png" title="example image" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Soft-Voting Weak-Learner Ensemble 100 Epoch Training/Testing Xero-One Loss Over MLP Parameter Count / 1000. MLP given 3 votes. 
+</div>
+
+We then tried the approach described above, and let the MLP independently train using the unmodified MLP training scheme mentioned previously. However, as opposed to halting training when MLP classifications loss first hits $0$, we only halt training when **ensemble** classification first hits $0$. 
+
+We found that while classification loss had certainly gone down when compared to the soft-voting scheme (with even just **one** vote!), the ensemble still severely underperformed when compared to each of the individual models used. As seen in the plots, the classification loss starts to improve once the MLP gets more and more votes, agreeing with intuition that, eventually, the MLP has veto right. As opposed to the soft-voting scheme, all classifiers now contribute proportional to their voting weight, which mitigates the previous problem of some models having much higher confidence than others. However, we believe the poor results can be attributed to the models we used for ensembling. Indeed, a significant number of models are regular, boosted or ensembled (or all) versions of Decision Trees, which means there is a significant chance that they make similar mistakes on similar data points. Looking at the plots for overparametrized Decision Trees and L2-Boost Ensembles, we see that train error never quite reaches $0$ for any of them. Since the train loss seems to pleateau for our models as well, this may prove why. In the cases of $1$ or $2$ votes, this can lead to consistently poor predictions, especially since the models are not reparametrized across the experiment. For $3$ votes, this phenomenon is less significant, as the ensemble slowly begins to reach the closer testing performance of the individual models. 
 
 <div class="row justify-content-sm-center">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -448,9 +498,11 @@ We use bootstrap aggregating, or 'bagging', to formulate our ensemble of these f
     Weak-Learner Ensemble 100 Epoch Training/Testing Zero-One Loss Over MLP Parameter Count / 1000. MLP given 3 votes. 
 </div>
 
-### Multi-Layer Perceptron Ensemble
+Further work could be done on the Weak-Learner Ensemble, focusing on better model selection and concurrent reparametrization across all models. Given the limited time and compute resources at our disposal, we leave this problem open for now.
 
-The Multi-Layer Perceptron Ensemble uses $5$ identically initialized MLPs which are trained in parallel using Pytorch's autovectorization capabilities. Since they are defined in the same way and trained simultaneously using the MLP training scheme discussed above, each receives equal weight when it comes to taking an averaged prediction. However, unlike the bagging method used for the Weak-Learner Ensemble, we take advantage of the identical architectures of the models and the numerical stability provided by this, and generate ensemble predictions by averaging the logits of all five learners and using those values as the logits of the ensemble. Again, we experiment using $100$ and $500$ epochs to see how the behavior evolves across increasing number of epochs, but we omit training over $2000$ epochs due to excessive computational costs. An experiment for the future would be training over a very large number of epochs for even greater ensemble sizes to see how results vary across time.
+All hope is not lost, however. Seeing the poor performance of the Weak-Learner Ensemble given the significantly better performance of individual models, one could be discouraged from attempting to use ensembling to mitigate double descent, since it may not even be observable in such settings. However, we saw double descent in L2-Boost Ensembles and, arguably, in Random Forests, and so we pushed onward. All other ensemble methods used multiple copies of the same model, and so we decided to experiment with a small ensemble of MLPs, to see how they would behave. 
+
+This was feasible for $100$ and $500$ epochs only, but the obtained results shed light on how ensembling could in fact mitigate double descent. The phenomenon is not quite as observable in the $100$ epoch case (one explanation could be that the train loss has not converged yet), but it becomes quite clear when looking at the $500$ epoch ensemble and comparing it with the original $500$ epoch MLP. Double descent is still very easy to see, ocuring at the same threshold as before. This makes sense, since the MLPs have all reached interpolation, which should increase test loss for all, and then start going down as we overparametrize more and more. However, the main result is that the increase once we reach interpolation is *much* lower than before. Indeed, the ensemble sees a jump from $\sim 0.35$ to around $\sim 0.4$ at the highest, whereas the individual MLP sees a jump from $\sim 0.36$ to around $\sim .52$, which is a lot more significant. Another important result is that the loss as we overparametrize is becomes *significantly* lower in the ensemble model than in the individual MLP.
 
 <div class="row justify-content-sm-center">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -478,37 +530,28 @@ The Multi-Layer Perceptron Ensemble uses $5$ identically initialized MLPs which 
     MLP Ensemble 500 Epoch Training/Testing Cross-Entropy Loss Over MLP Parameter Count / 1000
 </div>
 
-There has been discussion in the past of whether to average the raw logits or the softmax-transformed probabilities. The main concern raised over averaging across raw logits is that the outputted values can vary greatly in magnitude across models (and therefore overconfident models can potentially overshadow all other models when taking the prediction), but, empirically, that doesn't seem to be a problem here. Tassi et al. provide some intuition in <d-cite key="Tassi2022TheIO"></d-cite>, suggesting that different approaches to ensembling should be taken depending depending on the levels of confidence of the models. For safety, they recommend averaging the probabilities, but for the purposes of our task, averaging the logits suffices.
-
-***
-
-## Results and Discussion
-
-
-
-
-One notable advantage to this ensemble method is the ability to further parallelize one's training of overparameterized neural networks. These models can take extreme lengths of time to train, and besides increasing the computational allocation used, practitioners may use data, model, or processor parallelism in order to reduce this time. The ensemble neural networks we use are independently generated, meaning that they can be trained on different machines without issue. This could be a valid alternative to training for more epochs for reducing model error past the interpolation threshold. 
+While we weren't able to fully get rid of the double descent curve by ensembling multiple MLPs, the fact that it became flatter and the loss past the interpolation threshold started to become smaller is quite exciting, as it suggests that, potentially, large ensembles of MLPs may not noticeably suffer from double descent at all, and yield better overall predictions than individual models can. One notable advantage to this ensemble method is the ability to further parallelize one's training of overparameterized neural networks. These models can take extreme lengths of time to train, and besides increasing the computational allocation used, practitioners may use data, model, or processor parallelism in order to reduce this time. The ensemble neural networks we use are independently generated, meaning that they can be vectorized or trained on different GPU cores without issue. This could be a valid alternative to training for more epochs for reducing model error past the interpolation threshold. More work investigating the effect of neural network ensembling on double descent, especially on models trained over many epochs, would be very exciting and potentially shed even more light on the possible advantages of overparametrization.
 
 
 ***
 
 ## Conclusion
 
+We discussed the existence of double descent for some simple and classical models, observing the effects of varying across levels of parametrization and noting that single descent can sometimes be mistaken for double descent, and proposed the use of various ensembles to mitigate the effects of double descent.
 
-
-Ensembles consisting solely of neural networks resulted in a considerable boost in performance past the interpolation threshold. However, pairing the neural network with weak learners in an ensemble voting system actually *decreased* testing performance, though this adverse effect decreased as the neural network received proportionally more votes. Machine learning engineers that intend to intentionally overparameterize their models may take advantage of not only the ensemble approach's increased performance, but the enhanced parallelization capabilities offered by the method.
+Ensembles consisting solely of neural networks resulted in a considerable boost in performance past the individual model interpolation threshold, and in a flatter curve when compared to individual models. However, pairing the neural network with weak learners in an ensemble voting system actually **decreased** testing performance, though this adverse effect decreased as the neural network received proportionally more votes. Machine learning engineers that intend to intentionally overparameterize their models may take advantage of not only the ensemble approach's increased performance and significantly more reliable results, but the enhanced parallelization/vectorization capabilities offered by the proposed method.
 
 ***
 
 ## Future Work
 
 
-This project was implemented using Google Colab, which proved to be restrictive for adopting more complex models. A key part of the double descent phenomenon is overparameterization, and so complex models that are additionally overparameterized will require more powerful computing resources beyond what we used. Furthermore, additional computing power can allow for this project to be expanded to more complicated datasets and tasks. MNIST classification is computationally inexpensive, though invoking double descent in more complex tasks such as text generation in natural language processing was not feasible using Google Colab. Future projects that follow this work should keep computational limitations in mind when choosing models and datasets. 
+This project was implemented using Google Colab, which proved to be restrictive for adopting more complex models. A key part of the double descent phenomenon is overparameterization, which happens across multiple full training loops, and so complex models that are additionally overparameterized will require more powerful computing resources beyond what we used. For example, model which takes $10$ hours to complete a single training loop will take multiple days to train before being able to plot results and observe double descent. Even for models that take around $10-15$ minutes to train, such as the $500$ epoch MLP we explored throughout our project, a full experiment that showcases the double descent curve in detail can take upwards of $5$ hours. Furthermore, additional computing power can allow for this project to be expanded to more complicated datasets and tasks. MNIST classification is computationally inexpensive, though invoking double descent in more complex tasks such as text generation in natural language processing was not feasible using Google Colab. Future projects that follow this work should keep computational limitations in mind when choosing models and datasets. 
 
-During the planning process of this project, we discussed using a more rigorous voting system than what is traditionally found in ensemble model projects. Effectively, each model would have a weight associated with how much influence its output should have on the overall ensemble output. For $n$ models, each model could start with, say, a weight of $1/n$. Then, after producing each model's vector output, the categorical cross-entropy loss with respect the true output could be computed, and the weights of each model could be updated such that each model has its weight decreased by some amount proportional to the calculated loss. Then, these weights could be normalized using the softmax function. This would be repeated for each level of parameterization. Due to resource constraints and the limitations of sklearn to the CPU, learning both the model weights and ensemble weights at each level of ensemble parameterization was not feasible given the size of the models we built and the Classifiers we chose to use, as well as the number of epochs we trained over. Future studies may wish to implement this method, however, to produce a more robust ensemble for classification.
+In addition to the future work suggested throughout our project, we propose a final approach that we believe is worth exploring further. During the planning process of this project, we discussed using a more rigorous voting system than what is traditionally found in ensemble model projects. Effectively, each model would have a weight associated with how much influence its output should have on the overall ensemble output. For $n$ models, each model could start with, say, a weight of $1/n$. Then, after producing each model's vector output, the categorical cross-entropy loss with respect the true output could be computed, and the weights of each model could be updated such that each model has its weight decreased by some amount proportional to the calculated loss. Then, these weights could be normalized using the softmax function. This would be repeated for each level of parameterization. Due to resource constraints and the limitations of sklearn to the CPU, learning both the model weights and ensemble weights at each level of ensemble parameterization was not feasible given the size of the models we built and the Classifiers we chose to use, as well as the number of epochs we trained over. Future studies may wish to implement this method, however, to produce a more robust ensemble for classification.
 
 ***
 
 ## Reproducibility Statement
 
-To ensure reproducibility, we have included the codebase used for this project, as well as the above description of our data, models, and methods. 
+To ensure reproducibility, we have included the codebase used for this project, as well as the above description of our data, models, and methods <d-cite key="colab"></d-cite>. Note that the Colab notebook that we have worked in is currently very messy and sometimes incomplete due to faults in Google's autosaving feature, but we plan to clean it up and have it available for easy future experimentation.
