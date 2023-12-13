@@ -84,7 +84,7 @@ point, larger models begin to hurt our ability to generalize. By adding more and
 parameters, we may end up overfitting to the training data, resulting in a model that poorly
 generalizes on new samples. On the other hand, a modern machine learning scientist may
 contest that a bigger model is always better. If the true function relating an input and output
-is conveyed by a simple function, In reality, neither of these ideas are completely correct in
+is conveyed by a simple function, in reality, neither of these ideas are completely correct in
 practice, and empirical findings demonstrate some combination of these philosophies.
 This brings us to the concept known as *double descent*. Double descent is the phenomenon
 where, as a model’s size is increased, test loss increases after reaching a minimum, then
@@ -182,7 +182,7 @@ of the findings of this paper with the double descent phenomenon. Effectively, b
 
 ### Computing Resources and Software
 
-We have implemented this project using CUDA and the free version of Google Colab, with additional computing units for more costly experiments. To train and test these models, we use various machine learning packages in Python, namely Scikit-learn, PyTorch and Tensorflow. Additional software commonly used for machine learning projects, such as numpy, tensorboard matplotlib, was also utilized.
+We have implemented this project using CUDA and the free version of Google Colab, with additional computing units for more costly experiments. To train and test these models, we use various machine learning packages in Python, namely Scikit-learn, PyTorch and Tensorflow. Additional software commonly used for machine learning projects, such as numpy, tensorboard and matplotlib, was also utilized.
 
 All plots have been produced by us, unless otherwise specified. Note that all tensorboard plots have $0.25$ smoothing applied, except for the Soft-Voting Ensemble, which has $0.6$ smoothing applied (though this won't make much of a difference as will soon be seen). The non-smoothed plot can be seen traced in light-blue in all provided plots.
 
